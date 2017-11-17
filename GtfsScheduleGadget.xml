@@ -8,7 +8,7 @@
  <UserPref name="labels" display_name="Labels On" required="true" default_value="true" datatype="bool" /> 
  <UserPref name="rdW" display_name="Width" required="true" default_value="280" datatype="hidden" />
  <UserPref name="rdH" display_name="Height" required="true" default_value="190" datatype="hidden" /> 
- </UserPref> 
+	 
  </ModulePrefs>
 <Content type="html">
 
