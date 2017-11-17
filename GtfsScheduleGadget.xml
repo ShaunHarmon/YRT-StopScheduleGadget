@@ -55,7 +55,7 @@
 		var offset = now.getTimezoneOffset();
 		$.ajax({
 			//url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + now.toUTCString(),
-			url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + cur_time ,
+			url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + cur_time,
 			type: 'GET',
 			dataType: 'json', // added data type
 			//data:{stop_id: '9700'},
@@ -67,7 +67,7 @@
 				var table = document.createElement('table');
 				table.setAttribute("id", "stoptable");
 				// Create Table Header Row
-				var thr = document.createElement('tr'); 
+				var thr = document.createElement('tr');
 				// Create table headers
 				var th1 = document.createElement('th');
 				var routehead = document.createTextNode('Route');
@@ -93,14 +93,14 @@
 					stop_time.setMinutes(stop_time.getMinutes() + offset);
 					//var stop_time = res[i].stop_time;
 					cur_service_id = 1;
-					if (now.getDay() == 6){ 
+					if (now.getDay() == 6){
 						console.log(now.getDay());
 						cur_service_id = 2;
 					}else if (now.getDay() == 0){
 						cur_service_id = 3;
 					}
 					if (stop_time > now && res[i].service_id == cur_service_id && stop_time < thirty_min_ahead){
-						var tr = document.createElement('tr');   
+						var tr = document.createElement('tr');
 
 						var td1 = document.createElement('td');
 						var td2 = document.createElement('td');
@@ -122,7 +122,7 @@
 						
 						td1.appendChild(text1);
 						td2.appendChild(text2);
-						td3.appendChild(text3)
+						td3.appendChild(text3);
 						
 						tr.appendChild(td1);
 						tr.appendChild(td2);
@@ -144,9 +144,9 @@
 			});
 		});
 
-		function pageScroll() {  
+		function pageScroll() {
 			var objDiv = document.getElementById("myDiv");
-			objDiv.scrollTop = objDiv.scrollTop + 1;  
+			objDiv.scrollTop = objDiv.scrollTop + 1;
 			$('p:nth-of-type(1)').html('scrollTop : '+ objDiv.scrollTop);
 			$('p:nth-of-type(2)').html('scrollHeight : ' + objDiv.scrollHeight);
 			if (objDiv.scrollTop == (objDiv.scrollHeight - objDiv.offsetHeight)) {
