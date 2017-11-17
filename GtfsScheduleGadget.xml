@@ -49,7 +49,7 @@
 	<div id="myDiv"></div>
 	<script>
 		var prefs = new gadgets.Prefs();
- 		var cur_time = prefs.getString("user_stop_id");
+ 		var stopid = prefs.getString("user_stop_id");
 		var now = new Date();
 		var cur_time = now.toUTCString();
 		var offset = now.getTimezoneOffset();
