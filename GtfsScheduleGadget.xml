@@ -48,7 +48,7 @@
  <body>
 	<div id="myDiv"></div>
 	<script>
-		var timeout = 1;
+		var timeout = 5;
 		var prefs = new gadgets.Prefs();
 		var stopid = prefs.getString("user_stop_id");
 		loadLatestStops();
