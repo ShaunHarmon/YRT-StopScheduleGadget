@@ -48,10 +48,11 @@
  <body>
 	<div id="myDiv"></div>
 	<script>
+		var prefs = new gadgets.Prefs();
+ 		var cur_time = prefs.getString("user_stop_id");
 		var now = new Date();
 		var cur_time = now.toUTCString();
 		var offset = now.getTimezoneOffset();
-		var stopid = user_stop_id;
 		$.ajax({
 			//url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + now.toUTCString(),
 			url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + cur_time ,
