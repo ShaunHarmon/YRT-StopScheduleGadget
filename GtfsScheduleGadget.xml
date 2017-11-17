@@ -53,7 +53,9 @@
 		
 		$(function(){
 		  window.setInterval(function(){
-		    loadLatestStops();
+			var elem = document.getElementById("#stoptable");
+    			return elem.parentNode.removeChild(elem);
+			loadLatestStops();
 		 }, 5000);
 
 		    function loadLatestStops(){
