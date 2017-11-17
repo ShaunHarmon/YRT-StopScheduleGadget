@@ -54,7 +54,7 @@
 		loadLatestStops();
 		$(function(){
 		  window.setInterval(function(){
-			var elem = document.getElementById("#stoptable");
+			var elem = document.getElementById("stoptable");
 			elem.parentNode.removeChild(elem);
 			console.log("UPDATE");
 			loadLatestStops();
