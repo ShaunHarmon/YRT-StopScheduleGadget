@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Module>
+
+ <ModulePrefs title="Revel Transit Gadget" description="Displays YRT Transit info for a stop" author="RevelDigital" background="transparent">
+
+ <UserPref name="user_stop_id" display_name="STOP ID" default_value="" />
+ <UserPref name="labels" display_name="Labels On" required="true" default_value="true" datatype="bool" /> 
+ <UserPref name="rdW" display_name="Width" required="true" default_value="280" datatype="hidden" />
+ <UserPref name="rdH" display_name="Height" required="true" default_value="190" datatype="hidden" /> 
+ </UserPref> 
+ </ModulePrefs>
+<Content type="html">
+
+<![CDATA[
+ <head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+ <style>
+	 #map {
+	 width: __UP_rdW__px;
+	 height: __UP_rdH__px;
+	 }
+	#stoptable {
+		font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+		border-collapse: collapse;
+		width: 100%;
+	}
+
+	#stoptable td, #stoptable th {
+		border: 1px solid #ddd;
+		padding: 8px;
+	}
+
+	#stoptable tr:nth-child(even){background-color: #f2f2f2;}
+
+	#stoptable tr:hover {background-color: #ddd;}
+
+	#stoptable th {
+		padding-top: 12px;
+		padding-bottom: 12px;
+		text-align: left;
+		background-color: #000000;
+		color: white;
+	}
+ </style>
+ </head>
+ 
+ <body>
+	<div id="myDiv"></div>
+	<script>
+		var now = new Date();
+		var offset = now.getTimezoneOffset();
+		var stopid = user_stop_id;
+		$.ajax({
+			//url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + now.toUTCString(),
+			url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + now.toUTCString(),
+			type: 'GET',
+			dataType: 'json', // added data type
+			//data:{stop_id: '9700'},
+			success: function(res) {
+				var now = new Date();
+				var thirty_min_ahead = new Date();
+				thirty_min_ahead.setMinutes(now.getMinutes()+90);
+				// Create Table
+				var table = document.createElement('table');
+				table.setAttribute("id", "stoptable");
+				// Create Table Header Row
+				var thr = document.createElement('tr'); 
+				// Create table headers
+				var th1 = document.createElement('th');
+				var routehead = document.createTextNode('Route');
+				th1.appendChild(routehead);
+				
+				var th2 = document.createElement('th');
+				var destinationhead = document.createTextNode('Destination');
+				th2.appendChild(destinationhead);
+				
+				var th3 = document.createElement('th');
+				var stoptime = document.createTextNode('Departure Time');
+				th3.appendChild(stoptime);
+				
+				// Add Headers to Row
+				thr.appendChild(th1);
+				thr.appendChild(th2);
+				thr.appendChild(th3);
+				// add header row to Table
+				table.appendChild(thr);
+				
+				for (var i = 0; len = res.length, i < len; i++){
+					var stop_time = new Date(res[i].stop_time);
+					stop_time.setMinutes(stop_time.getMinutes() + offset);
+					//var stop_time = res[i].stop_time;
+					cur_service_id = 1;
+					if (now.getDay() == 6){ 
+						console.log(now.getDay());
+						cur_service_id = 2;
+					}else if (now.getDay() == 0){
+						cur_service_id = 3;
+					}
+					if (stop_time > now && res[i].service_id == cur_service_id && stop_time < thirty_min_ahead){
+						var tr = document.createElement('tr');   
+
+						var td1 = document.createElement('td');
+						var td2 = document.createElement('td');
+						var td3 = document.createElement('td');
+						
+						var str = res[i].trip_headsign;
+						if (str.indexOf("to") !== -1){
+							var n = str.indexOf("to");
+							var route = str.substr(0, n);
+							var destination = str.substr(n+2, );
+						}else{
+							var route = str;
+							var destination = "";
+						}
+						
+						var text1 = document.createTextNode(route);
+						var text2 = document.createTextNode(destination);
+						var text3 = document.createTextNode(stop_time.toLocaleTimeString());
+						
+						td1.appendChild(text1);
+						td2.appendChild(text2);
+						td3.appendChild(text3)
+						
+						tr.appendChild(td1);
+						tr.appendChild(td2);
+						tr.appendChild(td3);
+						
+						table.appendChild(tr);
+					}
+				}
+				document.body.appendChild(table);
+			}
+		});
+		var my_time;
+		$(document).ready(function() {
+			pageScroll();
+			$("#myDiv").mouseover(function() {
+				clearTimeout(my_time);
+			}).mouseout(function() {
+				pageScroll();
+			});
+		});
+
+		function pageScroll() {  
+			var objDiv = document.getElementById("myDiv");
+			objDiv.scrollTop = objDiv.scrollTop + 1;  
+			$('p:nth-of-type(1)').html('scrollTop : '+ objDiv.scrollTop);
+			$('p:nth-of-type(2)').html('scrollHeight : ' + objDiv.scrollHeight);
+			if (objDiv.scrollTop == (objDiv.scrollHeight - objDiv.offsetHeight)) {
+				objDiv.scrollTop = 0;
+			}
+			my_time = setTimeout('pageScroll()', 25);
+		}
+		
+	</script>
+</body>
+ ]]>
+ </Content>
+
+</Module>
