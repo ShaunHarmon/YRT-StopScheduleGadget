@@ -48,7 +48,7 @@
  <body>
 	<div id="myDiv"></div>
 	<script>
-		var timeout = 5;
+		var timeout = 1;
 		var prefs = new gadgets.Prefs();
 		var stopid = prefs.getString("user_stop_id");
 		loadLatestStops();
@@ -56,6 +56,7 @@
 		  window.setInterval(function(){
 			var elem = document.getElementById("#stoptable");
 			elem.parentNode.removeChild(elem);
+			console.log("UPDATE");
 			loadLatestStops();
 		 }, timeout*60000);
 		});
