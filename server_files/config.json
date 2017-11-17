@@ -1,0 +1,12 @@
+{
+    "mongoUrl": "mongodb://Admin:SoufhPfS6fpvQo74@gtfscluster-shard-00-00-sqlwl.mongodb.net:27017,gtfscluster-shard-00-01-sqlwl.mongodb.net:27017,gtfscluster-shard-00-02-sqlwl.mongodb.net:27017/test?ssl=true&replicaSet=GtfsCluster-shard-0&authSource=admin",
+    "agencies": [
+      {
+        "agency_key": "YRT",
+        "url": "https://www.yrt.ca/google/google_transit.zip",
+        "exclude": [
+          "shapes"
+        ]
+      }
+    ]
+  }
