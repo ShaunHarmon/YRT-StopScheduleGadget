@@ -110,7 +110,7 @@
 						if (str.indexOf("to") !== -1){
 							var n = str.indexOf("to");
 							var route = str.substr(0, n);
-							var destination = str.substr(n+2, );
+							var destination = str.substr(n+2, str.length);
 						}else{
 							var route = str;
 							var destination = "";
