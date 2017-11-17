@@ -53,7 +53,7 @@
 		
 		$(function(){
 		  window.setInterval(function(){
-		    loadLatestsStops();
+		    loadLatestStops();
 		 }, 5000);
 
 		    function loadLatestStops(){
