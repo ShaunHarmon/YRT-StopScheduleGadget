@@ -55,7 +55,7 @@
 		$(function(){
 		  window.setInterval(function(){
 			var elem = document.getElementById("#stoptable");
-			return elem.parentNode.removeChild(elem);
+			elem.parentNode.removeChild(elem);
 			loadLatestStops();
 		 }, timeout*60000);
 		});
