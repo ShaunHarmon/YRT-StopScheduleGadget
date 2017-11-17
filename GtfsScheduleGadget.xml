@@ -131,7 +131,7 @@
 						table.appendChild(tr);
 					}
 				}
-				document.body.appendChild(table);
+				document.getElementById("myDiv").appendChild(table);
 			}
 		});
 		var my_time;
