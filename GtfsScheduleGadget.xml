@@ -49,14 +49,15 @@
 	<div id="myDiv"></div>
 	<script>
 		var prefs = new gadgets.Prefs();
- 		var stopid = prefs.getString("user_stop_id");
-		
+		var stopid = prefs.getString("user_stop_id");
+		loadLatestStops();
 		$(function(){
 		  window.setInterval(function(){
 			var elem = document.getElementById("#stoptable");
-    			return elem.parentNode.removeChild(elem);
+			return elem.parentNode.removeChild(elem);
 			loadLatestStops();
 		 }, 5000);
+		});
 
 		    function loadLatestStops(){
 			var now = new Date();
@@ -144,7 +145,7 @@
 				}
 			});
 		     }
-		});
+		
 		var my_time;
 		$(document).ready(function() {
 			pageScroll();
