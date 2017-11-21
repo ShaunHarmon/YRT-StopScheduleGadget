@@ -24,6 +24,7 @@
 		font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
 		border-collapse: collapse;
 		width: 100%;
+		font-size: 30px;
 	}
 
 	#stoptable td, #stoptable th {
