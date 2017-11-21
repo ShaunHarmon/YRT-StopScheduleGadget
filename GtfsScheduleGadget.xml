@@ -103,7 +103,11 @@
 
 					for (var i = 0; len = res.length, i < len; i++){
 						var stop_time = new Date(res[i].stop_time);
-						stop_time.setMinutes(stop_time.getMinutes() + offset);
+						if (offset > 0){
+							stop_time.setMinutes(stop_time.getMinutes() + offset);
+						}else{
+							stop_time.setMinutes(stop_time.getMinutes() - offset);
+						}
 						//var stop_time = res[i].stop_time;
 						cur_service_id = 1;
 						if (now.getDay() == 6){
