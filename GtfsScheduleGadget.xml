@@ -109,6 +109,7 @@
 						var stop_time = new Date(res[i].stop_time);
 						stop_time.setMinutes(stop_time.getMinutes() + offset);
 						console.log(stop_time.toLocaleTimeString('en-US'));
+						console.log(stop_time.toTimeString());
 						//var stop_time = res[i].stop_time;
 						cur_service_id = 1;
 						if (now.getDay() == 6){
