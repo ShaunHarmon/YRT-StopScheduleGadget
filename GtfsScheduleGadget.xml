@@ -43,6 +43,9 @@
 		background-color: #000000;
 		color: white;
 	}
+	body{
+		background: transparent;
+	}
  </style>
  </head>
  
