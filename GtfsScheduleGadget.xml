@@ -33,6 +33,7 @@
 	}
 
 	#stoptable tr:nth-child(even){background-color: #f2f2f2;}
+	#stoptable tr:nth-child(odd){background-color: #FFFFFF;}
 
 	#stoptable tr:hover {background-color: #ddd;}
 
