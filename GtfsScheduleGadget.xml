@@ -95,7 +95,7 @@
 					th2.appendChild(destinationhead);
 
 					var th3 = document.createElement('th');
-					var stoptime = document.createTextNode('Departure Time');
+					var stoptime = document.createTextNode('Departure');
 					th3.appendChild(stoptime);
 
 					// Add Headers to Row
@@ -127,7 +127,16 @@
 							if (str.indexOf("to") !== -1){
 								var n = str.indexOf("to");
 								var route = str.substr(0, n);
+								var routeArray = route.split(" ");
+								if (routeArray[0] === "RT"){
+									route = routeArray[1];
+								}else{
+									route = routeArray[0];
+								}
 								var destination = str.substr(n+2, str.length);
+								if (destination.indexOf("via") !== -1){
+									destination = (destination.substr(0, destination.indexOf("via")));
+								}
 							}else{
 								var route = str;
 								var destination = "";
