@@ -59,10 +59,15 @@
 		loadLatestStops();
 		$(function(){
 		  window.setInterval(function(){
+			$("div").fadeOut(2000);
 			var elem = document.getElementById("stoptable");
-			elem.parentNode.removeChild(elem);
-			console.log("UPDATE");
-			loadLatestStops();
+			setTimeout(function(){
+				//do what you need here
+				elem.parentNode.removeChild(elem);
+				console.log("UPDATE");
+				loadLatestStops();
+				$("div").fadeIn(3000);
+			}, 2000);
 		 }, timeout*60000);
 		});
 
