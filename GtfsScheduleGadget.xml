@@ -137,7 +137,7 @@
 
 							var text1 = document.createTextNode(route);
 							var text2 = document.createTextNode(destination);
-							var text3 = document.createTextNode(stop_time.toLocaleTimeString('en-US'));
+							var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
 
 							td1.appendChild(text1);
 							td2.appendChild(text2);
