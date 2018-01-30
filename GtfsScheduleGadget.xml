@@ -4,7 +4,8 @@
 
  <ModulePrefs title="Revel Transit Gadget" description="Displays YRT Transit info for a stop" author="RevelDigital" background="transparent">
 
- <UserPref name="user_stop_id" display_name="STOP ID" default_value="" />
+ <UserPref name="user_stop_id" display_name="STOP ID(seperate many stop id with a comma)" default_value="" />
+ <UserPref name="timeout" display_name="Timeout value in minutes" required="true" default_value="15" />
  <UserPref name="labels" display_name="Labels On" required="true" default_value="true" datatype="bool" /> 
  <UserPref name="rdW" display_name="Width" required="true" default_value="280" datatype="hidden" />
  <UserPref name="rdH" display_name="Height" required="true" default_value="190" datatype="hidden" /> 

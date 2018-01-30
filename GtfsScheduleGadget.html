@@ -1,0 +1,285 @@
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+        #myDiv {
+            width: __UP_rdW__px;
+            height: __UP_rdH__px;
+        }
+        
+        .stoptable {
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 60px;
+        }
+        
+        .stoptable td,
+        .stoptable th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        
+        .stoptable tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .stoptable tr:nth-child(odd) {
+            background-color: #FFFFFF;
+        }
+        
+        .stoptable tr:hover {
+            background-color: #ddd;
+        }
+        
+        .stoptable th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #000000;
+            color: white;
+        }
+        
+        body {
+            background: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="myDiv"></div>
+    <script>
+        //var prefs = new gadgets.Prefs();
+        var timeout = 5; //prefs.getString("timeout");
+        var stopid = '9819,9820,9821,4461,4468,4453,4454,9723'; //prefs.getString("user_stop_id");
+        var stoplist = [];
+        loadStops();
+        $(function() {
+            window.setInterval(function() {
+                $("#stoptable").slideUp(2000);
+                var elem = document.getElementById("stoptable");
+                setTimeout(function() {
+                    //do what you need here
+                    elem.parentNode.removeChild(elem);
+                    console.log("UPDATE");
+                    updateList(stoplist);
+                    $("#stoptable").fadeIn(3000);
+                }, 2000);
+            }, timeout * 60000);
+        });
+
+        function loadStops() {
+            var now = new Date();
+            var cur_time = now.toUTCString();
+            var offset = now.getTimezoneOffset();
+            $.ajax({
+                url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + now.toUTCString(),
+                //url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + cur_time,
+                type: 'GET',
+                dataType: 'json', // added data type
+                //data:{stop_id: '9700'},
+                success: function(res) {
+                    stoplist = res;
+                    console.log(res);
+                    var now = new Date();
+                    var thirty_min_ahead = new Date();
+                    thirty_min_ahead.setMinutes(now.getMinutes() + 60);
+                    // Create Table
+                    var table = document.createElement('table');
+                    table.setAttribute("class", "stoptable");
+                    table.setAttribute("id", "stoptable");
+
+                    var table2 = document.createElement('table');
+                    table2.setAttribute("class", "stoptable");
+                    // Create Table Header Rows
+                    // Head row 1
+                    var head_row = document.createElement('tr');
+                    var table_head = document.createElement('th');
+                    var table_head_text = document.createTextNode(res[0].platform_name);
+                    table_head.appendChild(table_head_text);
+                    head_row.appendChild(table_head);
+                    table2.appendChild(head_row);
+
+                    // Head row 2
+                    var thr = document.createElement('tr');
+                    // Create table headers
+                    var th1 = document.createElement('th');
+                    var routehead = document.createTextNode('Route');
+                    th1.appendChild(routehead);
+
+                    var th2 = document.createElement('th');
+                    var destinationhead = document.createTextNode('Destination');
+                    th2.appendChild(destinationhead);
+
+                    var th3 = document.createElement('th');
+                    var stoptime = document.createTextNode('Departure');
+                    th3.appendChild(stoptime);
+
+                    var th4 = document.createElement('th');
+                    var platform = document.createTextNode('Platform');
+                    th4.appendChild(platform);
+
+                    // Add Headers to Row
+                    thr.appendChild(th1);
+                    thr.appendChild(th2);
+                    thr.appendChild(th3);
+                    thr.appendChild(th4);
+                    // add header row to Table
+                    table.appendChild(thr);
+
+                    for (var i = 0; len = res.length, i < len; i++) {
+                        var stop_time = new Date(res[i].stop_time);
+                        stop_time.setMinutes(stop_time.getMinutes() + offset);
+                        //var stop_time = res[i].stop_time;
+                        cur_service_id = 1;
+                        if (now.getDay() == 6) {
+                            console.log(now.getDay());
+                            cur_service_id = 2;
+                        } else if (now.getDay() == 0) {
+                            cur_service_id = 3;
+                        }
+                        if (stop_time > now && stop_time < thirty_min_ahead) {
+                            var tr = document.createElement('tr');
+
+                            var td1 = document.createElement('td');
+                            var td2 = document.createElement('td');
+                            var td3 = document.createElement('td');
+                            var td4 = document.createElement('td');
+
+                            var text1 = document.createTextNode(res[i].route);
+                            var text2 = document.createTextNode(res[i].destination);
+                            var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            }));
+                            var text4 = document.createTextNode(res[i].platform_number);
+
+                            td1.appendChild(text1);
+                            td2.appendChild(text2);
+                            td3.appendChild(text3);
+                            td4.appendChild(text4);
+
+                            tr.appendChild(td1);
+                            tr.appendChild(td2);
+                            tr.appendChild(td3);
+                            tr.appendChild(td4);
+
+                            table.appendChild(tr);
+                        }
+                    }
+                    document.getElementById("myDiv").appendChild(table2);
+                    document.getElementById("myDiv").appendChild(table);
+                }
+            });
+        }
+
+        function updateList(res) {
+            var now = new Date();
+            var cur_time = now.toUTCString();
+            var offset = now.getTimezoneOffset();
+            console.log(res);
+            var now = new Date();
+            var thirty_min_ahead = new Date();
+            thirty_min_ahead.setMinutes(now.getMinutes() + 60);
+            // Create Table
+            var table = document.createElement('table');
+            table.setAttribute("class", "stoptable");
+            table.setAttribute("id", "stoptable");
+
+            // Create Table Header Rows
+
+            // Head row 2
+            var thr = document.createElement('tr');
+            // Create table headers
+            var th1 = document.createElement('th');
+            var routehead = document.createTextNode('Route');
+            th1.appendChild(routehead);
+
+            var th2 = document.createElement('th');
+            var destinationhead = document.createTextNode('Destination');
+            th2.appendChild(destinationhead);
+
+            var th3 = document.createElement('th');
+            var stoptime = document.createTextNode('Departure');
+            th3.appendChild(stoptime);
+
+            var th4 = document.createElement('th');
+            var platform = document.createTextNode('Platform');
+            th4.appendChild(platform);
+
+            // Add Headers to Row
+            thr.appendChild(th1);
+            thr.appendChild(th2);
+            thr.appendChild(th3);
+            thr.appendChild(th4);
+            // add header row to Table
+            table.appendChild(thr);
+
+            for (var i = 0; len = res.length, i < len; i++) {
+                var stop_time = new Date(res[i].stop_time);
+                stop_time.setMinutes(stop_time.getMinutes() + offset);
+                //var stop_time = res[i].stop_time;
+                cur_service_id = 1;
+                if (now.getDay() == 6) {
+                    console.log(now.getDay());
+                    cur_service_id = 2;
+                } else if (now.getDay() == 0) {
+                    cur_service_id = 3;
+                }
+                if (stop_time > now && stop_time < thirty_min_ahead) {
+                    var tr = document.createElement('tr');
+
+                    var td1 = document.createElement('td');
+                    var td2 = document.createElement('td');
+                    var td3 = document.createElement('td');
+                    var td4 = document.createElement('td');
+
+                    var text1 = document.createTextNode(res[i].route);
+                    var text2 = document.createTextNode(res[i].destination);
+                    var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }));
+                    var text4 = document.createTextNode(res[i].platform_number);
+
+                    td1.appendChild(text1);
+                    td2.appendChild(text2);
+                    td3.appendChild(text3);
+                    td4.appendChild(text4);
+
+                    tr.appendChild(td1);
+                    tr.appendChild(td2);
+                    tr.appendChild(td3);
+                    tr.appendChild(td4);
+
+                    table.appendChild(tr);
+                }
+            }
+            document.getElementById("myDiv").appendChild(table);
+        }
+
+        var my_time;
+        $(document).ready(function() {
+            pageScroll();
+            $("#myDiv").mouseover(function() {
+                clearTimeout(my_time);
+            }).mouseout(function() {
+                pageScroll();
+            });
+        });
+
+        function pageScroll() {
+            var objDiv = document.getElementById("myDiv");
+            objDiv.scrollTop = objDiv.scrollTop + 1;
+            $('p:nth-of-type(1)').html('scrollTop : ' + objDiv.scrollTop);
+            $('p:nth-of-type(2)').html('scrollHeight : ' + objDiv.scrollHeight);
+            if (objDiv.scrollTop == (objDiv.scrollHeight - objDiv.offsetHeight)) {
+                objDiv.scrollTop = 0;
+            }
+            my_time = setTimeout('pageScroll()', 25);
+        }
+    </script>
+</body>
+
+</html>
