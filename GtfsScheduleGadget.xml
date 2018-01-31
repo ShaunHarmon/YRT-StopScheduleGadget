@@ -185,6 +185,8 @@
         }
 
         function addRow(row, table) {
+			var now = new Date();
+            var offset = now.getTimezoneOffset();
             var stop_time = new Date(row.stop_time);
             stop_time.setMinutes(stop_time.getMinutes() + offset);
 
@@ -234,6 +236,7 @@
             //do what you need here
             //elem.parentNode.removeChild(elem);
             var now = new Date();
+            var offset = now.getTimezoneOffset();
             //console.log(now);
             //var nowStr = formatAMPM(now);
             // get now hour min

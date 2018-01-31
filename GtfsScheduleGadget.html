@@ -57,6 +57,7 @@
         var stoplist = [];
         var current_index_bottom = 0;
         var current_index_top = 0;
+
         loadStops();
         $(function() {
             window.setInterval(function() {
@@ -171,6 +172,8 @@
         }
 
         function addRow(row, table) {
+            var now = new Date();
+            var offset = now.getTimezoneOffset();
             var stop_time = new Date(row.stop_time);
             stop_time.setMinutes(stop_time.getMinutes() + offset);
 
@@ -215,11 +218,13 @@
 
 
         function updateList() {
+
             //$("#stoptable").slideUp(2000);
             var table = document.getElementById("stoptable");
             //do what you need here
             //elem.parentNode.removeChild(elem);
             var now = new Date();
+            var offset = now.getTimezoneOffset();
             //console.log(now);
             //var nowStr = formatAMPM(now);
             // get now hour min
