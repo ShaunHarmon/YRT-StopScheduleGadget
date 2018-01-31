@@ -50,11 +50,13 @@
 <body>
     <div id="myDiv"></div>
     <script>
-        //var prefs = new gadgets.Prefs();
-        var timeout = .25; //prefs.getString("timeout");
-        var stopid = '9819,9820,9821,4461,4468,4453,4454,9723'; //prefs.getString("user_stop_id");
+        var prefs = new gadgets.Prefs();
+        var timeout = 1;
+        var display_time = 60; //prefs.getString("timeout"); //
+        var stopid = prefs.getString("user_stop_id");
         var stoplist = [];
-        var current_index = 0;
+        var current_index_bottom = 0;
+        var current_index_top = 0;
         loadStops();
         $(function() {
             window.setInterval(function() {
@@ -67,8 +69,8 @@
             var cur_time = now.toUTCString();
             var offset = now.getTimezoneOffset();
             $.ajax({
-                url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + now.toUTCString(),
-                //url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + cur_time,
+                //url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + now.toUTCString(),
+                url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + cur_time,
                 type: 'GET',
                 dataType: 'json', // added data type
                 //data:{stop_id: '9700'},
@@ -77,7 +79,7 @@
                     console.log(res);
                     var now = new Date();
                     var thirty_min_ahead = new Date();
-                    thirty_min_ahead.setMinutes(now.getMinutes() + 60);
+                    thirty_min_ahead.setMinutes(now.getMinutes() + display_time);
                     // Create Table
                     var table = document.createElement('table');
                     table.setAttribute("class", "stoptable");
@@ -127,6 +129,9 @@
                         //var stop_time = res[i].stop_time;
 
                         if (stop_time > now && stop_time < thirty_min_ahead) {
+                            if (current_index_top == 0) {
+                                current_index_top = i;
+                            }
                             var tr = document.createElement('tr');
 
                             var td1 = document.createElement('td');
@@ -136,16 +141,12 @@
 
                             var text1 = document.createTextNode(res[i].route);
                             var text2 = document.createTextNode(res[i].destination);
+                            var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            }));
 
-                            if (ct < 5) {
-                                ct++;
-                                var text3 = document.createTextNode("12:59 PM");
-                            } else {
-                                var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                }));
-                            }
+
                             var text4 = document.createTextNode(res[i].platform_number);
 
                             td1.appendChild(text1);
@@ -160,7 +161,7 @@
 
                             table.appendChild(tr);
 
-                            current_index = i;
+                            current_index_bottom = i;
                         }
                     }
                     document.getElementById("myDiv").appendChild(table2);
@@ -219,38 +220,36 @@
             //do what you need here
             //elem.parentNode.removeChild(elem);
             var now = new Date();
-            console.log(now);
+            //console.log(now);
             //var nowStr = formatAMPM(now);
             // get now hour min
 
             numDeleted = 0;
             for (var x = 1; x < table.rows.length; x++) {
-                var departureDate = new Date();
-                var departure = table.rows[x].cells[2].innerHTML;
-                var departureArray = departure.split(":");
-                var departureHour = departureArray[0];
-                var departureMin = departureArray[1]
-                var departureMinArray = departureMin.split(" ");
-                departureMin = departureMinArray[0];
-                if (departureMinArray[1] == "PM" && departureHour < 12) {
-                    departureHour = departureHour + 12;
-                }
+                var stop_time = new Date(stoplist[current_index_top].stop_time);
+                stop_time.setMinutes(stop_time.getMinutes());
+                //console.log(stoplist[current_index_top]);
+                //var departureDate = stoplist[current_index_top].stop_time; //INCLUDE OFFSET ON GADGET
+                departureDate = stop_time;
 
-                departureDate.setHours(departureHour);
-                departureDate.setMinutes(departureMin);
+                //console.log(now);
+                /// console.log("===============");
                 //console.log(departureDate);
 
                 if (now > departureDate) {
+                    console.log(now);
+                    console.log("===============");
                     console.log(departureDate);
                     console.log(table.rows[1]);
                     table.deleteRow(1);
+                    current_index_top++;
                     numDeleted++;
                 }
             }
             for (var y = 0; y < numDeleted; y++) {
-                current_index++;
+                current_index_bottom++;
                 //console.log(stoplist[current_index]);
-                addRow(stoplist[current_index], table);
+                addRow(stoplist[current_index_bottom], table);
             }
 
         }
