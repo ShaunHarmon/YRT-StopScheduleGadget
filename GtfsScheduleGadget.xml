@@ -64,23 +64,14 @@
 <body>
     <div id="myDiv"></div>
     <script>
-        var prefs = new gadgets.Prefs();
-        var timeout = prefs.getString("timeout");
-        var stopid = prefs.getString("user_stop_id");
+        //var prefs = new gadgets.Prefs();
+        var timeout = .25; //prefs.getString("timeout");
+        var stopid = '9819,9820,9821,4461,4468,4453,4454,9723'; //prefs.getString("user_stop_id");
         var stoplist = [];
+        var current_index = 0;
         loadStops();
-        $(function() {
-            window.setInterval(function() {
-                $("#stoptable").slideUp(2000);
-                var elem = document.getElementById("stoptable");
-                setTimeout(function() {
-                    //do what you need here
-                    elem.parentNode.removeChild(elem);
-                    console.log("UPDATE");
-                    updateList(stoplist);
-                    $("#stoptable").fadeIn(3000);
-                }, 2000);
-            }, timeout * 60000);
+        $(document).ready(function() {
+            setInterval("updateList()", timeout * 60000);
         });
 
         function loadStops() {
@@ -88,8 +79,8 @@
             var cur_time = now.toUTCString();
             var offset = now.getTimezoneOffset();
             $.ajax({
-                //url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + now.toUTCString(),
-                url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + cur_time,
+                url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + now.toUTCString(),
+                //url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + cur_time,
                 type: 'GET',
                 dataType: 'json', // added data type
                 //data:{stop_id: '9700'},
@@ -141,18 +132,12 @@
                     thr.appendChild(th4);
                     // add header row to Table
                     table.appendChild(thr);
-
+                    var ct = 0;
                     for (var i = 0; len = res.length, i < len; i++) {
                         var stop_time = new Date(res[i].stop_time);
-                        stop_time.setMinutes(stop_time.getMinutes() + offset);
+                        stop_time.setMinutes(stop_time.getMinutes());
                         //var stop_time = res[i].stop_time;
-                        cur_service_id = 1;
-                        if (now.getDay() == 6) {
-                            console.log(now.getDay());
-                            cur_service_id = 2;
-                        } else if (now.getDay() == 0) {
-                            cur_service_id = 3;
-                        }
+
                         if (stop_time > now && stop_time < thirty_min_ahead) {
                             var tr = document.createElement('tr');
 
@@ -163,10 +148,16 @@
 
                             var text1 = document.createTextNode(res[i].route);
                             var text2 = document.createTextNode(res[i].destination);
-                            var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            }));
+
+                            if (ct < 5) {
+                                ct++;
+                                var text3 = document.createTextNode("12:59 PM");
+                            } else {
+                                var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }));
+                            }
                             var text4 = document.createTextNode(res[i].platform_number);
 
                             td1.appendChild(text1);
@@ -180,6 +171,8 @@
                             tr.appendChild(td4);
 
                             table.appendChild(tr);
+
+                            current_index = i;
                         }
                     }
                     document.getElementById("myDiv").appendChild(table2);
@@ -188,89 +181,90 @@
             });
         }
 
-        function updateList(res) {
+        function addRow(row, table) {
+            var stop_time = new Date(row.stop_time);
+            stop_time.setMinutes(stop_time.getMinutes());
+
+            var tr = document.createElement('tr');
+
+            var td1 = document.createElement('td');
+            var td2 = document.createElement('td');
+            var td3 = document.createElement('td');
+            var td4 = document.createElement('td');
+
+            var text1 = document.createTextNode(row.route);
+            var text2 = document.createTextNode(row.destination);
+            var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            }));
+            var text4 = document.createTextNode(row.platform_number);
+
+            td1.appendChild(text1);
+            td2.appendChild(text2);
+            td3.appendChild(text3);
+            td4.appendChild(text4);
+
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+            tr.appendChild(td3);
+            tr.appendChild(td4);
+
+            table.appendChild(tr);
+        }
+
+        function formatAMPM(date) {
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+            var ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            var strTime = hours + ':' + minutes + ' ' + ampm;
+            return strTime;
+        }
+
+
+        function updateList() {
+            //$("#stoptable").slideUp(2000);
+            var table = document.getElementById("stoptable");
+            //do what you need here
+            //elem.parentNode.removeChild(elem);
             var now = new Date();
-            var cur_time = now.toUTCString();
-            var offset = now.getTimezoneOffset();
-            console.log(res);
-            var now = new Date();
-            var thirty_min_ahead = new Date();
-            thirty_min_ahead.setMinutes(now.getMinutes() + 60);
-            // Create Table
-            var table = document.createElement('table');
-            table.setAttribute("class", "stoptable");
-            table.setAttribute("id", "stoptable");
+            //console.log(now);
+            //var nowStr = formatAMPM(now);
+            // get now hour min
 
-            // Create Table Header Rows
-
-            // Head row 2
-            var thr = document.createElement('tr');
-            // Create table headers
-            var th1 = document.createElement('th');
-            var routehead = document.createTextNode('Route');
-            th1.appendChild(routehead);
-
-            var th2 = document.createElement('th');
-            var destinationhead = document.createTextNode('Destination');
-            th2.appendChild(destinationhead);
-
-            var th3 = document.createElement('th');
-            var stoptime = document.createTextNode('Departure');
-            th3.appendChild(stoptime);
-
-            var th4 = document.createElement('th');
-            var platform = document.createTextNode('Platform');
-            th4.appendChild(platform);
-
-            // Add Headers to Row
-            thr.appendChild(th1);
-            thr.appendChild(th2);
-            thr.appendChild(th3);
-            thr.appendChild(th4);
-            // add header row to Table
-            table.appendChild(thr);
-
-            for (var i = 0; len = res.length, i < len; i++) {
-                var stop_time = new Date(res[i].stop_time);
-                stop_time.setMinutes(stop_time.getMinutes() + offset);
-                //var stop_time = res[i].stop_time;
-                cur_service_id = 1;
-                if (now.getDay() == 6) {
-                    console.log(now.getDay());
-                    cur_service_id = 2;
-                } else if (now.getDay() == 0) {
-                    cur_service_id = 3;
+            numDeleted = 0;
+            for (var x = 1; x < table.rows.length; x++) {
+                var departureDate = new Date();
+                var departure = table.rows[x].cells[2].innerHTML;
+                var departureArray = departure.split(":");
+                var departureHour = departureArray[0];
+                var departureMin = departureArray[1]
+                var departureMinArray = departureMin.split(" ");
+                departureMin = departureMinArray[0];
+                if (departureMinArray[1] == "PM" && departureHour < 12) {
+                    departureHour = departureHour + 12;
                 }
-                if (stop_time > now && stop_time < thirty_min_ahead) {
-                    var tr = document.createElement('tr');
 
-                    var td1 = document.createElement('td');
-                    var td2 = document.createElement('td');
-                    var td3 = document.createElement('td');
-                    var td4 = document.createElement('td');
+                departureDate.setHours(departureHour);
+                departureDate.setMinutes(departureMin);
+                //console.log(departureDate);
 
-                    var text1 = document.createTextNode(res[i].route);
-                    var text2 = document.createTextNode(res[i].destination);
-                    var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    }));
-                    var text4 = document.createTextNode(res[i].platform_number);
-
-                    td1.appendChild(text1);
-                    td2.appendChild(text2);
-                    td3.appendChild(text3);
-                    td4.appendChild(text4);
-
-                    tr.appendChild(td1);
-                    tr.appendChild(td2);
-                    tr.appendChild(td3);
-                    tr.appendChild(td4);
-
-                    table.appendChild(tr);
+                if (now > departureDate) {
+                    //console.log(departureDate);
+                    //console.log(table.rows[1]);
+                    table.deleteRow(1);
+                    numDeleted++;
                 }
             }
-            document.getElementById("myDiv").appendChild(table);
+            for (var y = 0; y < numDeleted; y++) {
+                current_index++;
+                //console.log(stoplist[current_index]);
+                addRow(stoplist[current_index], table);
+            }
+
         }
 
         var my_time;
