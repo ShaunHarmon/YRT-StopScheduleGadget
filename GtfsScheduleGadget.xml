@@ -135,7 +135,7 @@
                     var ct = 0;
                     for (var i = 0; len = res.length, i < len; i++) {
                         var stop_time = new Date(res[i].stop_time);
-                        stop_time.setMinutes(stop_time.getMinutes());
+                        stop_time.setMinutes(stop_time.getMinutes() + offset);
                         //var stop_time = res[i].stop_time;
 
                         if (stop_time > now && stop_time < thirty_min_ahead) {
