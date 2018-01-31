@@ -57,7 +57,9 @@
         var current_index = 0;
         loadStops();
         $(function() {
-            window.setInterval("updateList()", timeout * 60000);
+            window.setInterval(function() {
+                updateList();
+            }, timeout * 60000);
         });
 
         function loadStops() {
