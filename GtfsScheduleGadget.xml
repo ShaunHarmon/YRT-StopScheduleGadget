@@ -186,7 +186,7 @@
 
         function addRow(row, table) {
             var stop_time = new Date(row.stop_time);
-            stop_time.setMinutes(stop_time.getMinutes());
+            stop_time.setMinutes(stop_time.getMinutes() + offset);
 
             var tr = document.createElement('tr');
 
@@ -241,7 +241,7 @@
             numDeleted = 0;
             for (var x = 1; x < table.rows.length; x++) {
                 var stop_time = new Date(stoplist[current_index_top].stop_time);
-                stop_time.setMinutes(stop_time.getMinutes());
+                stop_time.setMinutes(stop_time.getMinutes() + offset);
                 //console.log(stoplist[current_index_top]);
                 //var departureDate = stoplist[current_index_top].stop_time; //INCLUDE OFFSET ON GADGET
                 departureDate = stop_time;

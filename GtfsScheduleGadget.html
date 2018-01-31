@@ -50,10 +50,10 @@
 <body>
     <div id="myDiv"></div>
     <script>
-        var prefs = new gadgets.Prefs();
+        //var prefs = new gadgets.Prefs();
         var timeout = 1;
         var display_time = 60; //prefs.getString("timeout"); //
-        var stopid = prefs.getString("user_stop_id");
+        var stopid = "9819,9820,9821,4461,4468,4453,4454,9723"; //prefs.getString("user_stop_id");
         var stoplist = [];
         var current_index_bottom = 0;
         var current_index_top = 0;
@@ -125,7 +125,7 @@
                     var ct = 0;
                     for (var i = 0; len = res.length, i < len; i++) {
                         var stop_time = new Date(res[i].stop_time);
-                        stop_time.setMinutes(stop_time.getMinutes());
+                        stop_time.setMinutes(stop_time.getMinutes() + offset);
                         //var stop_time = res[i].stop_time;
 
                         if (stop_time > now && stop_time < thirty_min_ahead) {
@@ -172,7 +172,7 @@
 
         function addRow(row, table) {
             var stop_time = new Date(row.stop_time);
-            stop_time.setMinutes(stop_time.getMinutes());
+            stop_time.setMinutes(stop_time.getMinutes() + offset);
 
             var tr = document.createElement('tr');
 
@@ -227,7 +227,7 @@
             numDeleted = 0;
             for (var x = 1; x < table.rows.length; x++) {
                 var stop_time = new Date(stoplist[current_index_top].stop_time);
-                stop_time.setMinutes(stop_time.getMinutes());
+                stop_time.setMinutes(stop_time.getMinutes() + offset);
                 //console.log(stoplist[current_index_top]);
                 //var departureDate = stoplist[current_index_top].stop_time; //INCLUDE OFFSET ON GADGET
                 departureDate = stop_time;
