@@ -65,7 +65,7 @@
     <div id="myDiv"></div>
     <script>
         var prefs = new gadgets.Prefs();
-        var timeout = prefs.getString("timeout");
+        var timeout = .25;//prefs.getString("timeout");
         var stopid = prefs.getString("user_stop_id");
         var stoplist = [];
         var current_index = 0;
