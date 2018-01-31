@@ -56,8 +56,8 @@
         var stoplist = [];
         var current_index = 0;
         loadStops();
-        $(document).ready(function() {
-            setInterval("updateList()", timeout * 60000);
+        $(function() {
+            window.setInterval("updateList()", timeout * 60000);
         });
 
         function loadStops() {
@@ -217,7 +217,7 @@
             //do what you need here
             //elem.parentNode.removeChild(elem);
             var now = new Date();
-            //console.log(now);
+            console.log(now);
             //var nowStr = formatAMPM(now);
             // get now hour min
 
@@ -239,8 +239,8 @@
                 //console.log(departureDate);
 
                 if (now > departureDate) {
-                    //console.log(departureDate);
-                    //console.log(table.rows[1]);
+                    console.log(departureDate);
+                    console.log(table.rows[1]);
                     table.deleteRow(1);
                     numDeleted++;
                 }

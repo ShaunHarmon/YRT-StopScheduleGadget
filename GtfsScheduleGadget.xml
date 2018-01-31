@@ -70,8 +70,8 @@
         var stoplist = [];
         var current_index = 0;
         loadStops();
-        $(document).ready(function() {
-            setInterval("updateList()", timeout * 60000);
+        $(function() {
+            window.setInterval("updateList()", timeout * 60000);
         });
 
         function loadStops() {
@@ -148,16 +148,11 @@
 
                             var text1 = document.createTextNode(res[i].route);
                             var text2 = document.createTextNode(res[i].destination);
-
-                            if (ct < 5) {
-                                ct++;
-                                var text3 = document.createTextNode("12:59 PM");
-                            } else {
-                                var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                }));
-                            }
+							var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
+								hour: '2-digit',
+								minute: '2-digit'
+							}));
+                            
                             var text4 = document.createTextNode(res[i].platform_number);
 
                             td1.appendChild(text1);
