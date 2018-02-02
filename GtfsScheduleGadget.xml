@@ -84,8 +84,6 @@
         var timeout = 1; // MIGHT BECOME A PREF
         var stoplist = [];
         var tomorrow_stoplist = [];
-        var current_index_bottom = 0;
-        var current_index_top = 0;
 
         // INIT GLOBALS
         var curr_day = new Date();
@@ -172,7 +170,9 @@
                 hour: '2-digit',
                 minute: '2-digit'
             }));
-            var text4 = document.createTextNode(row.platform_number);
+            if (row.platform_number != undefined) {
+                var text4 = document.createTextNode(row.platform_number);
+            }
 
             td1.appendChild(text1);
             td2.appendChild(text2);
@@ -182,7 +182,9 @@
             tr.appendChild(td1);
             tr.appendChild(td2);
             tr.appendChild(td3);
-            tr.appendChild(td4);
+            if (row.platform_number != undefined) {
+                tr.appendChild(td4);
+            }
 
             table.appendChild(tr);
         }
@@ -250,7 +252,6 @@
                 if (stop_time > now && ct < numRows) {
                     ct++;
                     addRow(res[i]);
-                    current_index_bottom = templist.length;
                 }
             }
             stoplist = templist;
@@ -273,22 +274,26 @@
         function updateList() {
             var table = document.getElementById("stoptable");
             var now = new Date();
+            now.setSeconds(0);
             var offset = now.getTimezoneOffset();
             numDeleted = 0;
             // Loop through the table rows and check if the stop times have expired
+            current_index = 0;
             for (var x = 1; x < table.rows.length; x++) {
-                var stop_time = new Date(stoplist[current_index_top].stop_time);
+                var stop_time = new Date(stoplist[current_index].stop_time);
                 stop_time.setMinutes(stop_time.getMinutes() + offset);
                 departureDate = stop_time;
                 if (now > departureDate) {
                     table.deleteRow(1);
-                    stoplist.splice(0, 1);
                     numDeleted++;
                 }
+                current_index++;
             }
             // Replace deleted rows with new ones
+
             for (var y = 0; y < numDeleted; y++) {
-                addRow(stoplist[current_index_bottom]);
+                stoplist.splice(0, 1);
+                addRow(stoplist[numRows - 1]);
             }
         }
     </script>
