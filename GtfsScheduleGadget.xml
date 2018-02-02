@@ -4,8 +4,9 @@
 
  <ModulePrefs title="Revel Transit Gadget" description="Displays YRT Transit info for a stop" author="RevelDigital" background="transparent">
 
- <UserPref name="user_stop_id" display_name="STOP ID(seperate many stop id with a comma)" default_value="" />
+ <UserPref name="user_stop_id" display_name="Stop Name ex:(RICHMOND HILL CENTRE)" default_value="" />
  <UserPref name="timeout" display_name="Timeout value in minutes" required="true" default_value="15" />
+ <UserPref name="num_rows" display_name="Number of rows displayed at a time" required="true" default_value="25" />
  <UserPref name="labels" display_name="Labels On" required="true" default_value="true" datatype="bool" /> 
  <UserPref name="rdW" display_name="Width" required="true" default_value="280" datatype="hidden" />
  <UserPref name="rdH" display_name="Height" required="true" default_value="190" datatype="hidden" /> 
@@ -64,128 +65,86 @@
 <body>
     <div id="myDiv"></div>
     <script>
+        // PREFS
         var prefs = new gadgets.Prefs();
-        var timeout = 1;
         var display_time = 60; //prefs.getString("timeout"); //
-        var stopid = prefs.getString("user_stop_id");
+        var stopid = prefs.getString("user_stop_id"); //'RICHMOND HILL CENTRE';
+        stopid = stopid.toUpperCase();
+        // GLOBALS
+        var timeout = 1; // MIGHT BECOME A PREF
         var stoplist = [];
+        var tomorrow_stoplist = [];
         var current_index_bottom = 0;
         var current_index_top = 0;
-        loadStops();
+
+        // INIT GLOBALS
+        var curr_day = new Date();
+        var tmpDay = new Date();
+        var tomorrow = new Date(tmpDay.setTime(tmpDay.getTime() + 1 * 86400000));
+
+        var cur_time = curr_day.toUTCString();
+        loadStops(cur_time, false);
+
+        // Check every minute for expired stoptimes
         $(function() {
             window.setInterval(function() {
                 updateList();
             }, timeout * 60000);
         });
 
-        function loadStops() {
-            var now = new Date();
-            var cur_time = now.toUTCString();
-            var offset = now.getTimezoneOffset();
+        // Check every hour for next days stops until tomorrow_stoplist is populated
+        // Also checks if it is the next day and updates the correct values.
+        $(function() {
+            window.setInterval(function() {
+                console.log("CHECKING IF TOMORROW LIST IS UPTO DATE");
+                if (tomorrow_stoplist.length < 1 || tomorrow_stoplist == undefined) {
+                    console.log("TOMORROW LIST NOT UP TO DATE: UPDATING");
+                    var tomorrow_str = tomorrow.toUTCString();
+                    loadStops(tomorrow_str, true);
+                }
+                var now = new Date();
+                if (now > tomorrow) {
+                    console.log("MOVNG TO THE NEXT DAY");
+                    curr_day = now;
+                    tomorrow = new Date(curr_day.setTime(curr_day.getTime() + 1 * 86400000));
+                    tomorrow_stoplist = [];
+                }
+            }, 60 * 60000);
+        });
+
+        function loadStops(date, loadTomorrow) {
             $.ajax({
+                // TEST URL
                 //url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + now.toUTCString(),
-                url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + cur_time,
+                // PROD URL
+                url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + date,
                 type: 'GET',
                 dataType: 'json', // added data type
-                //data:{stop_id: '9700'},
                 success: function(res) {
-                    stoplist = res;
-                    console.log(res);
-                    var now = new Date();
-                    var thirty_min_ahead = new Date();
-                    thirty_min_ahead.setMinutes(now.getMinutes() + display_time);
-                    // Create Table
-                    var table = document.createElement('table');
-                    table.setAttribute("class", "stoptable");
-                    table.setAttribute("id", "stoptable");
-
-                    var table2 = document.createElement('table');
-                    table2.setAttribute("class", "stoptable");
-                    // Create Table Header Rows
-                    // Head row 1
-                    var head_row = document.createElement('tr');
-                    var table_head = document.createElement('th');
-                    var table_head_text = document.createTextNode(res[0].platform_name);
-                    table_head.appendChild(table_head_text);
-                    head_row.appendChild(table_head);
-                    table2.appendChild(head_row);
-
-                    // Head row 2
-                    var thr = document.createElement('tr');
-                    // Create table headers
-                    var th1 = document.createElement('th');
-                    var routehead = document.createTextNode('Route');
-                    th1.appendChild(routehead);
-
-                    var th2 = document.createElement('th');
-                    var destinationhead = document.createTextNode('Destination');
-                    th2.appendChild(destinationhead);
-
-                    var th3 = document.createElement('th');
-                    var stoptime = document.createTextNode('Departure');
-                    th3.appendChild(stoptime);
-
-                    var th4 = document.createElement('th');
-                    var platform = document.createTextNode('Platform');
-                    th4.appendChild(platform);
-
-                    // Add Headers to Row
-                    thr.appendChild(th1);
-                    thr.appendChild(th2);
-                    thr.appendChild(th3);
-                    thr.appendChild(th4);
-                    // add header row to Table
-                    table.appendChild(thr);
-                    var ct = 0;
-                    for (var i = 0; len = res.length, i < len; i++) {
-                        var stop_time = new Date(res[i].stop_time);
-                        stop_time.setMinutes(stop_time.getMinutes() + offset);
-                        //var stop_time = res[i].stop_time;
-
-                        if (stop_time > now && stop_time < thirty_min_ahead) {
-                            if (current_index_top == 0) {
-                                current_index_top = i;
-                            }
-                            var tr = document.createElement('tr');
-
-                            var td1 = document.createElement('td');
-                            var td2 = document.createElement('td');
-                            var td3 = document.createElement('td');
-                            var td4 = document.createElement('td');
-
-                            var text1 = document.createTextNode(res[i].route);
-                            var text2 = document.createTextNode(res[i].destination);
-                            var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            }));
-
-
-                            var text4 = document.createTextNode(res[i].platform_number);
-
-                            td1.appendChild(text1);
-                            td2.appendChild(text2);
-                            td3.appendChild(text3);
-                            td4.appendChild(text4);
-
-                            tr.appendChild(td1);
-                            tr.appendChild(td2);
-                            tr.appendChild(td3);
-                            tr.appendChild(td4);
-
-                            table.appendChild(tr);
-
-                            current_index_bottom = i;
+                    if (loadTomorrow) {
+                        // load stoptimes for tomorrow
+                        for (var i = 0; len = res.length, i < len; i++) {
+                            stoplist.push(res[i]);
+                            tomorrow_stoplist.push(res[i]);
                         }
+                        console.log(stoplist);
+                    } else {
+                        // load stoptimes for current day -- only on initialization
+                        for (var i = 0; len = res.length, i < len; i++) {
+                            stoplist.push(res[i]);
+                        }
+                        // Create table for the first time
+                        console.log(stoplist);
+                        initalizeTable(stoplist);
                     }
-                    document.getElementById("myDiv").appendChild(table2);
-                    document.getElementById("myDiv").appendChild(table);
                 }
             });
         }
 
-        function addRow(row, table) {
-			var now = new Date();
+
+        function addRow(row) {
+            var table = document.getElementById("stoptable");
+            var now = new Date();
             var offset = now.getTimezoneOffset();
             var stop_time = new Date(row.stop_time);
             stop_time.setMinutes(stop_time.getMinutes() + offset);
@@ -218,6 +177,76 @@
             table.appendChild(tr);
         }
 
+
+
+        function initalizeTable(res) {
+            var now = new Date();
+            var offset = now.getTimezoneOffset();
+            var thirty_min_ahead = new Date();
+            thirty_min_ahead.setMinutes(now.getMinutes() + display_time);
+            // Create Table
+            var table = document.createElement('table');
+            table.setAttribute("class", "stoptable");
+            table.setAttribute("id", "stoptable");
+
+            var table2 = document.createElement('table');
+            table2.setAttribute("class", "stoptable");
+            // Create Table Header Rows
+            // Head row 1
+            var head_row = document.createElement('tr');
+            var table_head = document.createElement('th');
+            var table_head_text = document.createTextNode(res[0].platform_name);
+            table_head.appendChild(table_head_text);
+            head_row.appendChild(table_head);
+            table2.appendChild(head_row);
+
+            // Head row 2
+            var thr = document.createElement('tr');
+            // Create table headers
+            var th1 = document.createElement('th');
+            var routehead = document.createTextNode('Route');
+            th1.appendChild(routehead);
+
+            var th2 = document.createElement('th');
+            var destinationhead = document.createTextNode('Destination');
+            th2.appendChild(destinationhead);
+
+            var th3 = document.createElement('th');
+            var stoptime = document.createTextNode('Departure');
+            th3.appendChild(stoptime);
+
+            var th4 = document.createElement('th');
+            var platform = document.createTextNode('Platform');
+            th4.appendChild(platform);
+
+            // Add Headers to Row
+            thr.appendChild(th1);
+            thr.appendChild(th2);
+            thr.appendChild(th3);
+            thr.appendChild(th4);
+            // add header row to Table
+            table.appendChild(thr);
+            document.getElementById("myDiv").appendChild(table2);
+            document.getElementById("myDiv").appendChild(table);
+            var ct = 0;
+            var templist = [];
+            for (var i = 0; len = res.length, i < len; i++) {
+                var stop_time = new Date(res[i].stop_time);
+                stop_time.setMinutes(stop_time.getMinutes() + offset);
+                //var stop_time = res[i].stop_time;
+                if (stop_time > now) {
+                    templist.push(res[i]);
+                }
+                if (stop_time > now && stop_time < thirty_min_ahead) {
+                    addRow(res[i]);
+                    current_index_bottom = templist.length;
+                }
+            }
+            stoplist = templist;
+            console.log(stoplist);
+        }
+
+
         function formatAMPM(date) {
             var hours = date.getHours();
             var minutes = date.getMinutes();
@@ -231,65 +260,25 @@
 
 
         function updateList() {
-            //$("#stoptable").slideUp(2000);
             var table = document.getElementById("stoptable");
-            //do what you need here
-            //elem.parentNode.removeChild(elem);
             var now = new Date();
             var offset = now.getTimezoneOffset();
-            //console.log(now);
-            //var nowStr = formatAMPM(now);
-            // get now hour min
-
             numDeleted = 0;
+            // Loop through the table rows and check if the stop times have expired
             for (var x = 1; x < table.rows.length; x++) {
                 var stop_time = new Date(stoplist[current_index_top].stop_time);
                 stop_time.setMinutes(stop_time.getMinutes() + offset);
-                //console.log(stoplist[current_index_top]);
-                //var departureDate = stoplist[current_index_top].stop_time; //INCLUDE OFFSET ON GADGET
                 departureDate = stop_time;
-
-                //console.log(now);
-                /// console.log("===============");
-                //console.log(departureDate);
-
                 if (now > departureDate) {
-                    console.log(now);
-                    console.log("===============");
-                    console.log(departureDate);
-                    console.log(table.rows[1]);
                     table.deleteRow(1);
-                    current_index_top++;
+                    stoplist.splice(0, 1);
                     numDeleted++;
                 }
             }
+            // Replace deleted rows with new ones
             for (var y = 0; y < numDeleted; y++) {
-                current_index_bottom++;
-                //console.log(stoplist[current_index]);
-                addRow(stoplist[current_index_bottom], table);
+                addRow(stoplist[current_index_bottom]);
             }
-
-        }
-
-        var my_time;
-        $(document).ready(function() {
-            pageScroll();
-            $("#myDiv").mouseover(function() {
-                clearTimeout(my_time);
-            }).mouseout(function() {
-                pageScroll();
-            });
-        });
-
-        function pageScroll() {
-            var objDiv = document.getElementById("myDiv");
-            objDiv.scrollTop = objDiv.scrollTop + 1;
-            $('p:nth-of-type(1)').html('scrollTop : ' + objDiv.scrollTop);
-            $('p:nth-of-type(2)').html('scrollHeight : ' + objDiv.scrollHeight);
-            if (objDiv.scrollTop == (objDiv.scrollHeight - objDiv.offsetHeight)) {
-                objDiv.scrollTop = 0;
-            }
-            my_time = setTimeout('pageScroll()', 25);
         }
     </script>
 </body>

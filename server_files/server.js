@@ -24,6 +24,9 @@ request(requestSettings, function (error, response, body) {
   }
 });
 
+// GLOBALS
+var service_id = [];
+
 // UPDATE DB FUNCTION
 function updateDB(){
   mongoose.Promise = global.Promise;
@@ -37,29 +40,90 @@ function updateDB(){
     console.error(err);
   });
 }
-
-MongoClient.connect(url, function(err, db) {
-  if (err) throw err;
-  //Query the database for the feed end date and update the database if the end date is today.
-  db.collection('feedinfos').find({}).toArray(function(err, result) {
+function checkUpdateDB(){
+  MongoClient.connect(url, function(err, db) {
     if (err) throw err;
-    // If therer are no errors grab the feed_end_date and convert it to a string
-    var n = result[0].feed_end_date;
-    var td = n.toString();
+    //Query the database for the feed end date and update the database if the end date is today.
+    db.collection('feedinfos').find({}).toArray(function(err, result) {
+      if (err) throw err;
+      // If therer are no errors grab the feed_end_date and convert it to a string
+      console.log(result);
+      var n = result[0].feed_end_date;
+      end_date = convertToDate(n);
+      var today = new Date();
+      if (today > end_date){
+        console.log("UPDATING DATABASE");
+        updateDB();
+      }
+      console.log("END DATE: " + end_date);
+      db.close();
+    });
+  });
+}
+// CONVERTS YRT DATE FORMAT TO JAVASCRIPT FORMAT
+function convertToDate(date){
+    var td = date.toString();
     // Parse the string to get the year month and day
     var year = td.slice(0,4);
     var month = td.slice(4,6) - 1;
     var day = td.slice(6,8);
     // Create the end_date and todays date then compare them. If they are equal the database will be updated
     var end_date = new Date(year, month, day);
-    var today = new Date();
-    if (end_date.getFullYear() === today.getFullYear() && end_date.getMonth() === today.getMonth() && end_date.getDate() === today.getDate()){
-      updateDB();
-    }
-    console.log(end_date);
-    db.close();
+    return end_date;
+}
+
+// CONVERTS JAVASCRIPT DATE FORMAT TO YRT DATE FORMAT YYYYMMDD as an int
+function convertToYRTDate(date){
+  var year = date.getFullYear();
+  var month = date.getMonth() + 1;
+  var day = date.getDate();
+
+  if(date.getMonth() < 10){
+    month = "0" + month;
+  }
+  if(date.getDate() < 10){
+    day = "0" + day;
+  }
+  var strDate = date.getFullYear() +""+ month+ "" + day;
+  //convert to int
+  intDate = parseInt(strDate);
+  return intDate;
+}
+// checks and updates the list of service ids
+function updateServiceID(date){
+  service_id = [];
+  if(date.getDay() == 0){
+    service_id.push("3");
+  }
+  if(date.getDay() == 6){
+    service_id.push("2");
+  }
+  if(date.getDay() != 0 && date.getDay() != 6){
+    service_id.push("1");
+  }
+  yrtDate = convertToYRTDate(date);
+  MongoClient.connect(url, function(err, db){
+    if (err) throw err;
+    db.collection('calendardates').aggregate(
+      [// Stage 1
+        {$match: {"date":yrtDate}},
+      ]).toArray(function(err, result){
+        for(var i=0; i<result.length; i++){
+          if(result[i].exception_type == 1){
+            service_id.push(result[i].service_id);
+          }
+          if(result.exception_type == 2){
+            var index = array.indexOf(result[i].service_id);
+            if (index > -1) {
+              service_id.splice(index, 1);
+            }
+          }
+        }
+        console.log(result);
+        console.log(service_id);
+    });
   });
-});
+}
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -71,6 +135,8 @@ app.get('/', function(request, response) {
   console.log('Inside app.get function.');
   console.log(request.query.stop_id);
 
+  checkUpdateDB();
+
   function custom_sort(a, b) {
     return new Date(a.stop_time).getTime() - new Date(b.stop_time).getTime();
   }
@@ -79,12 +145,10 @@ app.get('/', function(request, response) {
     return a - b;
   }
   platformFlag = true; //request.query.stop_id; change to request parameter
-  stop_code = request.query.stop_id;
-  stop_code = stop_code.split(',');
+  stop_code = request.query.stop_id; // Name of the platform
   current_time = request.query.current_time;
   now = new Date(current_time);
-  //now = now.setHours(now.getHours() - 6);
-  //now = new Date(now);
+  updateServiceID(now); // updating the service id to the current date
   console.log(now);
 
   // Variable Declarations for Mongodb queries
@@ -95,14 +159,14 @@ app.get('/', function(request, response) {
   var stop_times_dict = {};
   var stop_id_dict = {};
   var stopName = '';
-  var lastTripId = 0;
+  
   // Opening connections to Mongodb 
   // db.collection('stoptimes').find({"stop_id":{"$in": stop_code}}).toArray((err, result)=> {
   MongoClient.connect(url, function(err, db){
     if (err) throw err;
     db.collection('stops').aggregate(
       [// Stage 1
-        {$match: {"stop_id":{"$in": stop_code}}},
+        {$match: {"stop_name":{"$regex": stop_code}}},
         // Stage 2
         {$lookup: {from: "stoptimes", localField: "stop_id", foreignField: "stop_id", as: "stoptime_objects"}},
         // Stage 3
@@ -110,10 +174,14 @@ app.get('/', function(request, response) {
         // Stage 4
         {$lookup: {from: "trips", localField: "stoptime_objects.trip_id", foreignField: "trip_id", as: "trip_objects" }},
         // Stage 5
-        {$match: {"stoptime_objects.pickup_type" : 0, "trip_objects.service_id": "1"}},
+        {$match: {"stoptime_objects.pickup_type" : 0, "trip_objects.service_id": {"$in": service_id}}},
         // Stage 6
-        {$project: {stop_name: 1, "stoptime_objects.departure_time": 1, "trip_objects.trip_headsign": 1}},
-      ]).toArray(function(err, result){;
+        {$lookup:{from: "routes",localField: "trip_objects.route_id",foreignField: "route_id",as: "route_objects"}},
+        // Stage 7
+        {$project: {"route_objects.route_short_name":1, "trip_objects.trip_headsign": 1, "stoptime_objects.departure_time": 1, stop_name: 1}},
+        // Stage 8
+        {$sort: {"stoptime_objects.departure_time": -1}},
+      ]).toArray(function(err, result){
         
         for (var i=0; len=result.length, i<len; i++){
           var item = {};
@@ -132,27 +200,8 @@ app.get('/', function(request, response) {
           var stop_time = new Date(stop_string);
           item["stop_time"] = stop_time.toUTCString();
 
-          var str = result[i].trip_objects[0].trip_headsign;
-          if (str.indexOf("to") !== -1) {
-              var n = str.indexOf("to");
-              var route = str.substr(0, n);
-              var routeArray = route.split(" ");
-              if (routeArray[0] === "RT") {
-                  route = routeArray[1];
-              } else {
-                  route = routeArray[0];
-              }
-              var destination = str.substr(n + 2, str.length);
-              if (destination.indexOf("via") !== -1) {
-                  destination = (destination.substr(0, destination.indexOf("via")));
-              }
-          } else {
-              var route = str;
-              var destination = "";
-          }
-
-          item["route"] = route;
-          item["destination"] = destination;
+          item["route"] = result[i].route_objects[0].route_short_name;
+          item["destination"] = result[i].trip_objects[0].trip_headsign;
 
           //console.log(item);
           stop_times_json.push(item);
@@ -171,4 +220,5 @@ app.get('/', function(request, response) {
 app.listen((process.env.PORT || 5000), function() {
   console.log('Node app is running on port', process.env.PORT);
   console.log(data);
+  var now = new Date();
 });
