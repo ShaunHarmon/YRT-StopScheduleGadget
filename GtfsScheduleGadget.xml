@@ -6,8 +6,8 @@
 
  <UserPref name="user_stop_id" display_name="Stop Name ex:(RICHMOND HILL CENTRE)" default_value="" />
  <UserPref name="num_rows" display_name="Number of rows displayed at a time" required="true" default_value="25" />
- <UserPref name="header_size" display_name="Font Size in px" required="true" default_value="30" />
- <UserPref name="row_size" display_name="Font Size in px" required="true" default_value="30" />
+ <UserPref name="header_size" display_name="Header Font Size in px" required="true" default_value="30" />
+ <UserPref name="row_size" display_name="Row Font Size in px" required="true" default_value="25" />
  <UserPref name="labels" display_name="Labels On" required="true" default_value="true" datatype="bool" /> 
  <UserPref name="rdW" display_name="Width" required="true" default_value="280" datatype="hidden" />
  <UserPref name="rdH" display_name="Height" required="true" default_value="190" datatype="hidden" /> 
