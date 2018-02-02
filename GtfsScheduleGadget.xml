@@ -5,8 +5,8 @@
  <ModulePrefs title="Revel Transit Gadget" description="Displays YRT Transit info for a stop" author="RevelDigital" background="transparent">
 
  <UserPref name="user_stop_id" display_name="Stop Name ex:(RICHMOND HILL CENTRE)" default_value="" />
- <UserPref name="timeout" display_name="Timeout value in minutes" required="true" default_value="15" />
  <UserPref name="num_rows" display_name="Number of rows displayed at a time" required="true" default_value="25" />
+ <UserPref name="font_size" display_name="Font Size in px" required="true" default_value="30" />
  <UserPref name="labels" display_name="Labels On" required="true" default_value="true" datatype="bool" /> 
  <UserPref name="rdW" display_name="Width" required="true" default_value="280" datatype="hidden" />
  <UserPref name="rdH" display_name="Height" required="true" default_value="190" datatype="hidden" /> 
@@ -15,7 +15,9 @@
 <Content type="html">
 
 <![CDATA[
- <head>
+ <html>
+
+<head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <style>
         #myDiv {
@@ -27,7 +29,7 @@
             font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
             border-collapse: collapse;
             width: 100%;
-            font-size: 30px;
+            font-size: __UP_font_size__px;
         }
         
         .stoptable td,
@@ -67,8 +69,9 @@
     <script>
         // PREFS
         var prefs = new gadgets.Prefs();
-        var display_time = 60; //prefs.getString("timeout"); //
+        var display_time = 60;
         var stopid = prefs.getString("user_stop_id"); //'RICHMOND HILL CENTRE';
+        var numRows = prefs.getString("num_rows"); // 25
         stopid = stopid.toUpperCase();
         // GLOBALS
         var timeout = 1; // MIGHT BECOME A PREF
@@ -115,7 +118,7 @@
         function loadStops(date, loadTomorrow) {
             $.ajax({
                 // TEST URL
-                //url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + now.toUTCString(),
+                //url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + date,
                 // PROD URL
                 url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + date,
                 type: 'GET',
@@ -237,7 +240,8 @@
                 if (stop_time > now) {
                     templist.push(res[i]);
                 }
-                if (stop_time > now && stop_time < thirty_min_ahead) {
+                if (stop_time > now && ct < numRows) {
+                    ct++;
                     addRow(res[i]);
                     current_index_bottom = templist.length;
                 }
@@ -282,6 +286,8 @@
         }
     </script>
 </body>
+
+</html>
  ]]>
  </Content>
 

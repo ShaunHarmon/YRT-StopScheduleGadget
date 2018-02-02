@@ -54,7 +54,7 @@
         //var prefs = new gadgets.Prefs();
         var display_time = 60; //prefs.getString("timeout"); //
         var stopid = 'richmond hill centre'; //prefs.getString("user_stop_id"); //'RICHMOND HILL CENTRE';
-        var numRows = 25; //prefs.getString("num_rows");
+        var numRows = 25; //prefs.getString("num_rows"); // 25
         stopid = stopid.toUpperCase();
         // GLOBALS
         var timeout = 1; // MIGHT BECOME A PREF
@@ -101,9 +101,9 @@
         function loadStops(date, loadTomorrow) {
             $.ajax({
                 // TEST URL
-                url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + date,
+                //url: "http://localhost:5000/?stop_id=" + stopid + "&current_time=" + date,
                 // PROD URL
-                //url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + date,
+                url: "https://young-retreat-13285.herokuapp.com/?stop_id=" + stopid + "&current_time=" + date,
                 type: 'GET',
                 dataType: 'json', // added data type
                 success: function(res) {
