@@ -9,7 +9,7 @@
         }
         
         .stoptable {
-            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            font-family: Arial, "Trebuchet MS", Helvetica, sans-serif;
             border-collapse: collapse;
             width: 100%;
         }
@@ -59,7 +59,7 @@
         //var prefs = new gadgets.Prefs();
         var display_time = 60; //prefs.getString("timeout"); //
         var stopid = 'richmond hill centre'; //prefs.getString("user_stop_id"); //'RICHMOND HILL CENTRE';
-        var numRows = 25; //prefs.getString("num_rows"); // 25
+        var numRows = 50; //prefs.getString("num_rows"); // 25
         stopid = stopid.toUpperCase();
         // GLOBALS
         var timeout = 1; // MIGHT BECOME A PREF
@@ -138,6 +138,10 @@
             var stop_time = new Date(row.stop_time);
             stop_time.setMinutes(stop_time.getMinutes() + offset);
 
+            // Get minutes difference b/t now and the departure time
+            var diff = stop_time - now;
+            var minutes = Math.round((diff / 1000) / 60);
+
             var tr = document.createElement('tr');
 
             var td1 = document.createElement('td');
@@ -147,10 +151,15 @@
 
             var text1 = document.createTextNode(row.route);
             var text2 = document.createTextNode(row.destination);
+            var text3 = document.createTextNode(minutes + " min");
+
+            /*
             var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit'
             }));
+            */
+
             if (row.platform_number != undefined) {
                 var text4 = document.createTextNode(row.platform_number);
             }
@@ -174,6 +183,7 @@
 
         function initalizeTable(res) {
             var now = new Date();
+            now.setSeconds(0);
             var offset = now.getTimezoneOffset();
             var thirty_min_ahead = new Date();
             thirty_min_ahead.setMinutes(now.getMinutes() + display_time);
@@ -262,9 +272,7 @@
             current_index = 0;
             for (var x = 1; x < table.rows.length; x++) {
                 var stop_time = new Date(stoplist[current_index].stop_time);
-                //console.log("now: " + now + "  |  top row: " + stop_time);
                 stop_time.setMinutes(stop_time.getMinutes() + offset);
-                //console.log("now: " + now + "  |  top row: " + stop_time);
                 departureDate = stop_time;
                 if (now > departureDate) {
                     console.log("now: " + now + "  |  top row: " + departureDate);
@@ -275,12 +283,22 @@
                 current_index++;
             }
             // Replace deleted rows with new ones
-
             for (var y = 0; y < numDeleted; y++) {
                 console.log("delete: " + stoplist[0]);
                 stoplist.splice(0, 1);
                 addRow(stoplist[numRows - 1]);
                 console.log("add: " + stoplist[numRows - 1]);
+            }
+            current_index = 0;
+            for (var x = 1; x < table.rows.length; x++) {
+                var stop_time = new Date(stoplist[current_index].stop_time);
+                stop_time.setMinutes(stop_time.getMinutes() + offset);
+                // Calc mins before departure
+                var diff = stop_time - now;
+                var minutes = Math.round((diff / 1000) / 60);
+                //console.log(table.rows[x].cells[2].innerHTML);
+                table.rows[x].cells[2].innerHTML = minutes + " min";
+                current_index++;
             }
         }
     </script>

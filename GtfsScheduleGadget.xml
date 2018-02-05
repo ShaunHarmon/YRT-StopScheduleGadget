@@ -150,12 +150,16 @@
         }
 
 
-        function addRow(row) {
+       function addRow(row) {
             var table = document.getElementById("stoptable");
             var now = new Date();
             var offset = now.getTimezoneOffset();
             var stop_time = new Date(row.stop_time);
             stop_time.setMinutes(stop_time.getMinutes() + offset);
+
+            // Get minutes difference b/t now and the departure time
+            var diff = stop_time - now;
+            var minutes = Math.round((diff / 1000) / 60);
 
             var tr = document.createElement('tr');
 
@@ -166,10 +170,15 @@
 
             var text1 = document.createTextNode(row.route);
             var text2 = document.createTextNode(row.destination);
+            var text3 = document.createTextNode(minutes + " min");
+
+            /*
             var text3 = document.createTextNode(stop_time.toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit'
             }));
+            */
+
             if (row.platform_number != undefined) {
                 var text4 = document.createTextNode(row.platform_number);
             }
@@ -284,16 +293,30 @@
                 stop_time.setMinutes(stop_time.getMinutes() + offset);
                 departureDate = stop_time;
                 if (now > departureDate) {
+                    console.log("now: " + now + "  |  top row: " + departureDate);
+                    console.log(table.rows[1]);
                     table.deleteRow(1);
                     numDeleted++;
                 }
                 current_index++;
             }
             // Replace deleted rows with new ones
-
             for (var y = 0; y < numDeleted; y++) {
+                console.log("delete: " + stoplist[0]);
                 stoplist.splice(0, 1);
                 addRow(stoplist[numRows - 1]);
+                console.log("add: " + stoplist[numRows - 1]);
+            }
+            current_index = 0;
+            for (var x = 1; x < table.rows.length; x++) {
+                var stop_time = new Date(stoplist[current_index].stop_time);
+                stop_time.setMinutes(stop_time.getMinutes() + offset);
+                // Calc mins before departure
+                var diff = stop_time - now;
+                var minutes = Math.round((diff / 1000) / 60);
+                //console.log(table.rows[x].cells[2].innerHTML);
+                table.rows[x].cells[2].innerHTML = minutes + " min";
+                current_index++;
             }
         }
     </script>
